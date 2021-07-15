@@ -2,7 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 //comp
 import Item from "./item/Item";
-import Cart from './Cart/Cart'
+import Cart from "./Cart/Cart";
 import { useState } from "react";
 import { useQuery } from "react-query";
 import Drawer from "@material-ui/core/Drawer";
@@ -12,6 +12,7 @@ import AddShoppingCartIcon from "@material-ui/icons/AddShoppingCart";
 import Badge from "@material-ui/core/Badge";
 //styles
 import { Wrapper, StyledButton } from "./App.styles";
+import { isTemplateSpan } from "typescript";
 //types
 export type CartItemType = {
   id: number;
@@ -37,22 +38,32 @@ function App() {
   const getTotalItems = (items: CartItemType[]) =>
     items.reduce((acc: number, item) => acc + item.amount, 0);
 
-  const handleAddToCart = (clickedItem: CartItemType) => null;
+  const handleAddToCart = (clickedItem: CartItemType) => {
+    setCartItems((prev) => {
+      //1. is the item is already added in the cart?
+      const isItemInCart = prev.find((item) => item.id === clickedItem.id);
+
+      if (isItemInCart)
+        return prev.map((item) =>
+          item.id === clickedItem.id
+            ? { ...item, amount: item.amount + 1 }
+            : item
+        );
+
+      return [...prev, { ...clickedItem, amount: 1 }];
+    });
+  };
   const handleRemoveFromCart = () => null;
 
   if (isLoading) return <LinearProgress />;
   if (error) return <div>Sometime went wrong...</div>;
   return (
     <Wrapper>
-      <Drawer
-        anchor="right"
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-      >
-        <Cart 
-        cartItems={cartItems} 
-        addToCart={handleAddToCart}
-        removeFromCart={handleRemoveFromCart}
+      <Drawer anchor="right" open={cartOpen} onClose={() => setCartOpen(false)}>
+        <Cart
+          cartItems={cartItems}
+          addToCart={handleAddToCart}
+          removeFromCart={handleRemoveFromCart}
         />
       </Drawer>
       <StyledButton onClick={() => setCartOpen(true)}>
